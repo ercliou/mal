@@ -1,4 +1,4 @@
-target/%.jar: src/%.clj
+target/%.jar: src/mal/%.clj
 	echo "leining $*"
 	lein with-profile $* uberjar
 
