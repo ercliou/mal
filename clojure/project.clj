@@ -5,4 +5,6 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]]
   :profiles {:step0_repl {:main mal.step0-repl
-                          :uberjar-name "step0_repl.jar"}})
+                          :uberjar-name "step0_repl.jar"}
+             :step1_read_print {:main mal.step1-read-print
+                                :uberjar-name "step1_read_print.jar"}})
