@@ -7,4 +7,6 @@
   :profiles {:step0_repl {:main mal.step0-repl
                           :uberjar-name "step0_repl.jar"}
              :step1_read_print {:main mal.step1-read-print
-                                :uberjar-name "step1_read_print.jar"}})
+                                :uberjar-name "step1_read_print.jar"}
+             :step2_eval {:main mal.step2-eval
+                          :uberjar-name "step2_eval.jar"}})
