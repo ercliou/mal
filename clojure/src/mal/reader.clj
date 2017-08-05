@@ -32,7 +32,7 @@
 (defn read-list [tokens result]
   (swap! recursion-lvl inc)
   (let [[t & ts] tokens
-        [[at & ats] elements] (read-form* ts [])] 
+        [[at & ats] elements] (read-form* ts [])]
     (swap! recursion-lvl dec)
     (condp = t
       "(" (do (check-balanced-coll ")" at tokens)
@@ -47,6 +47,7 @@
 (defn read-atom
   "Naive impl, expecting: integer, symbol"
   [[t & ts] result]
+  (dprint [:read-atom t])
   (let [mal-data (read-string t)] ; cheating?
     [ts (conj result mal-data)]))
 
@@ -58,18 +59,20 @@
 (defn read-form* [tokens result]
   (let [[t & ts] tokens]
     (if (or (empty? t)
-            (contains? #{")"} t))
+            (contains? #{")" "]"} t))
       [tokens result]
       (let [[tokens result] ((read-fn t) tokens result)]
         (recur tokens result)))))
 
 (defn read-form [tokens]
   (-> tokens
+      dprint
       (read-form* [])
       second
       first))
 
 (defn read-str [s]
-  (-> (tokenizer s)
-      read-form))
+  (binding [*debug?* false]
+    (-> (tokenizer s)
+        read-form)))
 
