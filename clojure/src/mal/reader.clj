@@ -13,11 +13,14 @@
        reverse))
 
 (def recursion-lvl (atom 0))
+(def ^:dynamic *debug?* false)
 
 (defn dprint [data]
-  (dotimes [r @recursion-lvl]
-    (print r "\t"))
-  (clojure.pprint/pprint data))
+  (when *debug?*
+    (dotimes [r @recursion-lvl]
+      (print r "\t"))
+    (clojure.pprint/pprint data))
+  data)
 
 (declare read-form*)
 
