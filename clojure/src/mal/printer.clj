@@ -3,10 +3,13 @@
 
 (declare print-string)
 
-(defn list->str [l]
-  (->> (mapv print-string l)
-       (string/join " ")
-       (#(str "(" % ")"))))
+(defn coll->str [l]
+  (let [[prefix suffix] (condp #(%1 %2) l
+                          list? ["(" ")"]
+                          vector? ["[" "]"])]
+    (->> (mapv print-string l)
+         (string/join " ")
+         (#(str prefix % suffix)))))
 
 (defn escape-str [s]
   (-> (clojure.string/replace s #"\"" "\\\\\"")
@@ -20,7 +23,7 @@
     false? (str data)
     symbol? (str data)
     number? (str data)
-    list? (list->str data)
+    coll? (coll->str data)
     string? (escape-str data)
     :else (ex-info "No printer mapped" {:data data :class (class data)})))
 

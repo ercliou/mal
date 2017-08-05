@@ -24,15 +24,24 @@
 
 (declare read-form*)
 
+(defn check-balanced-coll [closing-token actual-token tokens]
+  (when (not= closing-token actual-token)
+    (throw (ex-info "Not balanced!" {:expecting closing-token
+                                     :tokens tokens}))))
+
 (defn read-list [tokens result]
   (swap! recursion-lvl inc)
   (let [[t & ts] tokens
         [[at & ats] elements] (read-form* ts [])] 
     (swap! recursion-lvl dec)
     (condp = t
-      "(" (do (when (not= at ")") (ex-info "Parentheses don't match" {:tokens tokens}))
+      "(" (do (check-balanced-coll ")" at tokens)
               [ats (->> elements
                         ->list
+                        (conj result))])
+      "[" (do (check-balanced-coll "]" at tokens)
+              [ats (->> elements
+                        (into [])
                         (conj result))]))))
 
 (defn read-atom

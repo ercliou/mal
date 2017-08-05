@@ -15,6 +15,8 @@
     symbol? (get repl-env ast
                  #(throw (ex-info "Symbol not found" {:symbol ast})))
     list? (map #(e-eval % env) ast)
+    vector? (mapv #(e-eval % env) ast)
+
     ast))
 
 (defn e-read [s] (mal.reader/read-str s))
