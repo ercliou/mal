@@ -28,5 +28,6 @@
     number? (str data)
     coll? (coll->str data)
     string? (escape-str data)
-    :else (ex-info "No printer mapped" {:data data :class (class data)})))
+    keyword? (str data)
+    (throw (ex-info "No printer mapped" {:data data :class (class data)}))))
 
