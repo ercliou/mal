@@ -42,6 +42,10 @@
       "[" (do (check-balanced-coll "]" at tokens)
               [ats (->> elements
                         (into [])
+                        (conj result))])
+      "{" (do (check-balanced-coll "}" at tokens)
+              [ats (->> elements
+                        (apply hash-map)
                         (conj result))]))))
 
 (defn read-atom
@@ -59,7 +63,7 @@
 (defn read-form* [tokens result]
   (let [[t & ts] tokens]
     (if (or (empty? t)
-            (contains? #{")" "]"} t))
+            (contains? #{")" "]" "}"} t))
       [tokens result]
       (let [[tokens result] ((read-fn t) tokens result)]
         (recur tokens result)))))

@@ -1,13 +1,16 @@
 (ns mal.printer
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [mal.misc :as misc]))
 
 (declare print-string)
 
 (defn coll->str [l]
   (let [[prefix suffix] (condp #(%1 %2) l
                           list? ["(" ")"]
-                          vector? ["[" "]"])]
-    (->> (mapv print-string l)
+                          vector? ["[" "]"]
+                          map? ["{" "}"])]
+    (->> (cond-> l (map? l) misc/map->vec)
+         (mapv print-string)
          (string/join " ")
          (#(str prefix % suffix)))))
 

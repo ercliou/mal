@@ -1,6 +1,7 @@
 (ns mal.step2-eval
   (:require [mal.reader]
-            [mal.printer])
+            [mal.printer]
+            [mal.misc :as misc])
   (:gen-class))
 
 (def repl-env {'+ +
@@ -16,7 +17,10 @@
                  #(throw (ex-info "Symbol not found" {:symbol ast})))
     list? (map #(e-eval % env) ast)
     vector? (mapv #(e-eval % env) ast)
-
+    map? (->> ast
+              misc/map->vec
+              (mapv #(e-eval % env))
+              (apply hash-map))
     ast))
 
 (defn e-read [s] (mal.reader/read-str s))
