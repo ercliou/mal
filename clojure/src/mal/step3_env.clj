@@ -2,48 +2,32 @@
   (:require [mal.reader]
             [mal.printer]
             [mal.misc :as misc]
+            [mal.eval]
             [mal.env])
   (:gen-class))
 
-;; TODO stopped here
 (def repl-env (mal.env/new-env nil {'+ +
                                     '- -
                                     '* *
                                     '/ /}))
 
-(declare e-eval)
+(defn- tap [x] (println "tap=>") (println x) x)
 
-(defn eval-ast [ast env]
-  (condp #(%1 %2) ast
-    symbol? (mal.env/get-env env ast)
-    list? (map #(e-eval % env) ast)
-    vector? (mapv #(e-eval % env) ast)
-    map? (->> ast
-              misc/map->vec
-              (mapv #(e-eval % env))
-              (apply hash-map))
-    ast))
+(def e-read mal.reader/read-str)
+(def e-eval mal.eval/eval)
+(def e-print mal.printer/print-string)
 
-(defn- eval-list [l env]
-  (if (empty? l)
-      l
-      (let [[ast-fn & ast-params] (eval-ast l env)]
-        (apply ast-fn ast-params))))
+(def env2 (mal.env/set-env repl-env 'x 3))
+(comment (rep "x" env2))
 
-(defn e-read [s] (mal.reader/read-str s))
-
-(defn e-eval [s env]
-  (if (list? s)
-    (eval-list s env)
-    (eval-ast s env)))
-
-(defn e-print [s] (mal.printer/print-string s))
-
-(defn rep [s env]
-  (-> s
-      e-read
-      (e-eval env)
-      e-print))
+(defn rep
+  "Read Eval Print
+  Returns stringified result and new env modified by Eval."
+  [s env]
+  (let [[result new-env] (-> s
+                             e-read
+                             (e-eval env))]
+    [(e-print result) new-env]))
 
 (defn check-eof [s]
   (if (some? s)
@@ -52,12 +36,13 @@
         (System/exit 0))))
 
 (defn -main []
-  (while true
-    (try
+  (try
+    (loop [env repl-env]
       (print "user> ")
       (flush)
-      (-> (read-line)
-          check-eof
-          (rep repl-env)
-          println)
-      (catch Exception e (println e)))))
+      (let [[result-str new-env] (-> (read-line)
+                                     check-eof
+                                     (rep env))]
+        (println result-str)
+        (recur new-env)))
+    (catch Exception e (println e))))
