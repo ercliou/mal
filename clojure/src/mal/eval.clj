@@ -33,16 +33,32 @@
     map? (eval-map ast env)
     [ast env]))
 
-(defn- eval-def! [l env]
-  (let [[_ sym raw] l
-        [value env2] (eval raw env)
+(defn eval-and-create-sym [[sym expr] env]
+  (let [[value env2] (eval expr env)
         new-env (mal.env/set-env env2 sym value)]
     [value new-env]))
+
+(defn- eval-def! [l env]
+  (let [[_ sym expr] l]
+    (eval-and-create-sym [sym expr] env)))
 
 (defn- eval-normal-function [l env]
   (let [[[ast-fn & ast-params] new-env] (eval-ast l env)
         result (apply ast-fn ast-params)]
     [result new-env]))
+
+(defn- eval-let-bindings [binding-list env]
+  (assert (even? (count binding-list)) "let binding list must be even")
+  (->> (partition 2 binding-list)
+       (reduce (fn [env pair]
+                 (second (eval-and-create-sym pair env)))
+               env)))
+
+(defn- eval-let [l env]
+  (let [[_let* binding-list body] l
+        new-env (eval-let-bindings binding-list env)
+        [result _] (eval body new-env)]
+    [result env]))
 
 (defn- eval-list
   "Eval a form. Returns result and new env"
@@ -50,7 +66,8 @@
   (if (empty? l)
     [l env]
     (case (first l)
-      'def! (eval-def! l env)
+      def! (eval-def! l env)
+      let* (eval-let l env)
       (eval-normal-function l env))))
 
 (defn eval [s env]

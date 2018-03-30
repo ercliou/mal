@@ -9,4 +9,6 @@
              :step1_read_print {:main mal.step1-read-print
                                 :uberjar-name "step1_read_print.jar"}
              :step2_eval {:main mal.step2-eval
-                          :uberjar-name "step2_eval.jar"}})
+                          :uberjar-name "step2_eval.jar"}
+             :step3_env {:main mal.step3-env
+                         :uberjar-name "step3_env.jar"}})
