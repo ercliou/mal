@@ -55,10 +55,29 @@
                env)))
 
 (defn- eval-let [l env]
-  (let [[_let* binding-list body] l
+  (let [[_let* binding-list & body] l
         new-env (eval-let-bindings binding-list env)
-        [result _] (eval body new-env)]
+        [result _] (eval (apply list 'do body) new-env)]
     [result env]))
+
+(defn- eval-do [[_do & exprs] env]
+  (-> (eval-every-element exprs env)
+      (update 0 last)))
+
+(defn- eval-if [[_if conditional then else] env]
+  (let [[cond-result cond-env] (eval conditional env)]
+    (if cond-result
+      (eval then cond-env)
+      (eval else cond-env))))
+
+(defn- eval-fn [[_fn* params & body] env]
+  #_(let [my-fn (fn [& params*]
+                (assert (= (count params) (count params* "Wrong number of args")))
+                (let [env-binded-params []]
+                (eval body env-binded-params))
+                )]
+    (mal.eval/set-env env ))
+  )
 
 (defn- eval-list
   "Eval a form. Returns result and new env"
@@ -68,6 +87,9 @@
     (case (first l)
       def! (eval-def! l env)
       let* (eval-let l env)
+      do (eval-do l env)
+      if (eval-if l env)
+      fn* (eval-fn l env)
       (eval-normal-function l env))))
 
 (defn eval [s env]
